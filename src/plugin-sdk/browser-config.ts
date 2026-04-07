@@ -11,7 +11,7 @@ export {
   resolveProfile,
   type ResolvedBrowserConfig,
   type ResolvedBrowserProfile,
-} from "../../extensions/browser/browser-config.js";
-export { parseBrowserHttpUrl, redactCdpUrl } from "../../extensions/browser/browser-cdp.js";
+} from "./browser-profiles.js";
+export { parseBrowserHttpUrl, redactCdpUrl } from "./browser-cdp.js";
 export { ensureBrowserControlAuth, resolveBrowserControlAuth } from "./browser-control-auth.js";
 export type { BrowserControlAuth } from "./browser-control-auth.js";
