@@ -1022,15 +1022,6 @@ function isBundledPluginConfiguredForRuntimeDeps(params: {
   if (hasExplicitChannelDisable) {
     return false;
   }
-  if (params.plugins.allow.length > 0 && !params.plugins.allow.includes(params.pluginId)) {
-    return false;
-  }
-  if (entry?.enabled === true) {
-    return true;
-  }
-  if (hasConfiguredChannel) {
-    return true;
-  }
   // Library extensions (no openclaw.plugin.json) opt into runtime
   // dependency installation through stageRuntimeDependencies alone.
   // Unlike regular plugins they are loaded on-demand and have no
@@ -1039,6 +1030,20 @@ function isBundledPluginConfiguredForRuntimeDeps(params: {
     openclaw?: { bundle?: { stageRuntimeDependencies?: unknown } };
   } | null;
   if (pkg?.openclaw?.bundle?.stageRuntimeDependencies === true) {
+    return true;
+  }
+  if (params.plugins.allow.length > 0 && !params.plugins.allow.includes(params.pluginId)) {
+    return false;
+  }
+    return true;
+  }
+  if (params.plugins.allow.length > 0 && !params.plugins.allow.includes(params.pluginId)) {
+    return false;
+  }
+  if (entry?.enabled === true) {
+    return true;
+  }
+  if (hasConfiguredChannel) {
     return true;
   }
   return manifest.enabledByDefault;
