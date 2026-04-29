@@ -1116,6 +1116,19 @@ function shouldIncludeBundledPluginRuntimeDeps(params: {
     return true;
   }
   if (scopedToPluginIds) {
+    // Library extensions (no openclaw.plugin.json) opt into runtime
+    // dependency installation through stageRuntimeDependencies alone.
+    // They bypass plugin activation gates even in scoped scans.
+    try {
+      fs.accessSync(path.join(params.pluginDir, "openclaw.plugin.json"));
+    } catch {
+      const pkg = readJsonObject(path.join(params.pluginDir, "package.json")) as {
+        openclaw?: { bundle?: { stageRuntimeDependencies?: unknown } };
+      } | null;
+      if (pkg?.openclaw?.bundle?.stageRuntimeDependencies === true) {
+        return true;
+      }
+    }
     if (!params.plugins) {
       return true;
     }
