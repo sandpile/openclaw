@@ -931,6 +931,7 @@ describe("doctor bundled plugin runtime deps", () => {
       config: { plugins: { enabled: true } },
       installDeps: (params) => {
         installed.push(params);
+        materializeRuntimeDeps(params);
       },
     });
 
@@ -943,6 +944,68 @@ describe("doctor bundled plugin runtime deps", () => {
       },
     ]);
     expect(installRoot).not.toBe(root);
-    expect(readRetainedRuntimeDepsManifest(installRoot)).toEqual(["sharp@0.34.5"]);
+    expect(readMaterializedRuntimeDepSpecs(installRoot, ["sharp@0.34.5"])).toEqual(["sharp@0.34.5"]);
+  });
+
+  it("repairs library extension deps even when plugins are globally disabled", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-doctor-bundled-"));
+    writeJson(path.join(root, "package.json"), { name: "openclaw" });
+    writeJson(path.join(root, "dist", "extensions", "media-understanding-core", "package.json"), {
+      name: "@openclaw/media-understanding-core",
+      dependencies: { sharp: "0.34.5" },
+      openclaw: { bundle: { stageRuntimeDependencies: true } },
+    });
+    const installed = createInstalledRuntimeDeps();
+
+    await maybeRepairBundledPluginRuntimeDeps({
+      runtime: createRuntime(),
+      prompter: createNonInteractivePrompter(),
+      packageRoot: root,
+      config: { plugins: { enabled: false } },
+      installDeps: (params) => {
+        installed.push(params);
+        materializeRuntimeDeps(params);
+      },
+    });
+
+    const installRoot = resolveBundledRuntimeDependencyPackageInstallRoot(root);
+    expect(installed).toEqual([
+      {
+        installRoot,
+        missingSpecs: ["sharp@0.34.5"],
+        installSpecs: ["sharp@0.34.5"],
+      },
+    ]);
+  });
+
+  it("repairs library extension deps even when plugin is denied", async () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "openclaw-doctor-bundled-"));
+    writeJson(path.join(root, "package.json"), { name: "openclaw" });
+    writeJson(path.join(root, "dist", "extensions", "media-understanding-core", "package.json"), {
+      name: "@openclaw/media-understanding-core",
+      dependencies: { sharp: "0.34.5" },
+      openclaw: { bundle: { stageRuntimeDependencies: true } },
+    });
+    const installed = createInstalledRuntimeDeps();
+
+    await maybeRepairBundledPluginRuntimeDeps({
+      runtime: createRuntime(),
+      prompter: createNonInteractivePrompter(),
+      packageRoot: root,
+      config: { plugins: { deny: ["media-understanding-core"] } },
+      installDeps: (params) => {
+        installed.push(params);
+        materializeRuntimeDeps(params);
+      },
+    });
+
+    const installRoot = resolveBundledRuntimeDependencyPackageInstallRoot(root);
+    expect(installed).toEqual([
+      {
+        installRoot,
+        missingSpecs: ["sharp@0.34.5"],
+        installSpecs: ["sharp@0.34.5"],
+      },
+    ]);
   });
 });

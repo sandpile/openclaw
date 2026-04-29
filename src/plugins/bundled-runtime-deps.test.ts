@@ -1641,6 +1641,48 @@ describe("scanBundledPluginRuntimeDeps config policy", () => {
     expect(result.deps.map((dep) => `${dep.name}@${dep.version}`)).toEqual(["sharp@0.34.5"]);
     expect(result.conflicts).toEqual([]);
   });
+
+  it("bypasses plugins.enabled:false gate for library extensions", () => {
+    const packageRoot = makeTempDir();
+    const pluginDir = path.join(packageRoot, "dist", "extensions", "media-understanding-core");
+    fs.mkdirSync(pluginDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(pluginDir, "package.json"),
+      JSON.stringify({
+        name: "@openclaw/media-understanding-core",
+        dependencies: { sharp: "0.34.5" },
+        openclaw: { bundle: { stageRuntimeDependencies: true } },
+      }),
+    );
+
+    const result = scanBundledPluginRuntimeDeps({
+      packageRoot,
+      config: { plugins: { enabled: false } },
+    });
+
+    expect(result.deps.map((dep) => `${dep.name}@${dep.version}`)).toEqual(["sharp@0.34.5"]);
+  });
+
+  it("bypasses plugins.deny gate for library extensions", () => {
+    const packageRoot = makeTempDir();
+    const pluginDir = path.join(packageRoot, "dist", "extensions", "media-understanding-core");
+    fs.mkdirSync(pluginDir, { recursive: true });
+    fs.writeFileSync(
+      path.join(pluginDir, "package.json"),
+      JSON.stringify({
+        name: "@openclaw/media-understanding-core",
+        dependencies: { sharp: "0.34.5" },
+        openclaw: { bundle: { stageRuntimeDependencies: true } },
+      }),
+    );
+
+    const result = scanBundledPluginRuntimeDeps({
+      packageRoot,
+      config: { plugins: { deny: ["media-understanding-core"] } },
+    });
+
+    expect(result.deps.map((dep) => `${dep.name}@${dep.version}`)).toEqual(["sharp@0.34.5"]);
+  });
 });
 
 describe("ensureBundledPluginRuntimeDeps", () => {
