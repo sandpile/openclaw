@@ -1088,6 +1088,20 @@ function shouldIncludeBundledPluginRuntimeDeps(params: {
   manifestCache?: BundledPluginRuntimeDepsManifestCache;
 }): boolean {
   if (params.selectedPluginIds) {
+    // Library extensions (no openclaw.plugin.json) opt in through
+    // stageRuntimeDependencies and bypass all activation gates.
+    if (params.selectedPluginIds.has(params.pluginId)) {
+      try {
+        fs.accessSync(path.join(params.pluginDir, "openclaw.plugin.json"));
+      } catch {
+        const pkg = readJsonObject(path.join(params.pluginDir, "package.json")) as {
+          openclaw?: { bundle?: { stageRuntimeDependencies?: unknown } };
+        } | null;
+        if (pkg?.openclaw?.bundle?.stageRuntimeDependencies === true) {
+          return true;
+        }
+      }
+    }
     return (
       params.selectedPluginIds.has(params.pluginId) &&
       !(
