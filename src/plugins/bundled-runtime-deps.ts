@@ -966,6 +966,21 @@ function isBundledPluginConfiguredForRuntimeDeps(params: {
   includeConfiguredChannels?: boolean;
   manifestCache?: BundledPluginRuntimeDepsManifestCache;
 }): boolean {
+  // Library extensions (no openclaw.plugin.json) opt into runtime
+  // dependency installation through stageRuntimeDependencies alone.
+  // They are loaded on-demand and have no channel/slot activation —
+  // the bundle flag is their sole signal. Because library extensions
+  // are infrastructure, they bypass all plugin activation gates.
+  try {
+    fs.accessSync(path.join(params.pluginDir, "openclaw.plugin.json"));
+  } catch {
+    const pkg = readJsonObject(path.join(params.pluginDir, "package.json")) as {
+      openclaw?: { bundle?: { stageRuntimeDependencies?: unknown } };
+    } | null;
+    if (pkg?.openclaw?.bundle?.stageRuntimeDependencies === true) {
+      return true;
+    }
+  }
   if (
     !passesRuntimeDepsPluginPolicy({
       pluginId: params.pluginId,
@@ -1021,21 +1036,6 @@ function isBundledPluginConfiguredForRuntimeDeps(params: {
   }
   if (hasExplicitChannelDisable) {
     return false;
-  }
-  // Library extensions (no openclaw.plugin.json) opt into runtime
-  // dependency installation through stageRuntimeDependencies alone.
-  // Unlike regular plugins they are loaded on-demand and have no
-  // channel/slot activation — the bundle flag is their sole signal.
-  const pkg = readJsonObject(path.join(params.pluginDir, "package.json")) as {
-    openclaw?: { bundle?: { stageRuntimeDependencies?: unknown } };
-  } | null;
-  if (pkg?.openclaw?.bundle?.stageRuntimeDependencies === true) {
-    return true;
-  }
-  if (params.plugins.allow.length > 0 && !params.plugins.allow.includes(params.pluginId)) {
-    return false;
-  }
-    return true;
   }
   if (params.plugins.allow.length > 0 && !params.plugins.allow.includes(params.pluginId)) {
     return false;
