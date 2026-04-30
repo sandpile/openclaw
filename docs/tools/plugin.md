@@ -88,20 +88,19 @@ Gateway startup runtime-dependency repair.
 Explicit disablement still wins: `plugins.entries.<id>.enabled: false`,
 `plugins.deny`, `plugins.enabled: false`, and `channels.<id>.enabled: false`
 prevent automatic bundled runtime-dependency repair for that plugin/channel.
+Library extensions (see below) are excepted from plugin gate checks.
 A non-empty `plugins.allow` also bounds default-enabled bundled runtime-dependency
 repair; explicit bundled channel enablement (`channels.<id>.enabled: true`) can
 still repair that channel's plugin dependencies.
 External plugins and custom load paths must still be installed through
 `openclaw plugins install`.
 
-**Library extensions** (bundled packages without `openclaw.plugin.json` that
-declare `openclaw.bundle.stageRuntimeDependencies: true` in `package.json`) are
-infrastructure, not user-facing plugins. They are loaded on-demand through
-`loadBundledPluginPublicArtifactModuleSync` and never go through channel/slot
-activation or the manifest registry. As infrastructure, they bypass
+**Library extensions** are built-in packages that provide core capabilities
+(like image processing) rather than user-facing channels or providers. They have
+no `openclaw.plugin.json` and do not appear in `openclaw plugins list`.
+Because they are infrastructure — not plugins — they are unaffected by
 `plugins.enabled`, `plugins.deny`, `plugins.allow`, and per-entry plugin gates.
-Their declared runtime dependencies are always installed by unscoped startup
-scans and `openclaw doctor --fix`.
+Their dependencies are always installed by `openclaw doctor --fix`.
 
 ## Plugin types
 
