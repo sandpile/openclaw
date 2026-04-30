@@ -98,7 +98,7 @@ External plugins and custom load paths must still be installed through
 **Library extensions** are built-in packages that provide core capabilities
 (like image processing) rather than user-facing channels or providers. They have
 no `openclaw.plugin.json` and do not appear in `openclaw plugins list`.
-Because they are infrastructure — not plugins — they are unaffected by
+Because they are not user-facing plugins, they are unaffected by
 `plugins.enabled`, `plugins.deny`, `plugins.allow`, and per-entry plugin gates.
 Their dependencies are always installed by `openclaw doctor --fix`.
 

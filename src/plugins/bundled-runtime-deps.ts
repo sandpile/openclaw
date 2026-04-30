@@ -970,7 +970,7 @@ function isBundledPluginConfiguredForRuntimeDeps(params: {
   // dependency installation through stageRuntimeDependencies alone.
   // They are loaded on-demand and have no channel/slot activation —
   // the bundle flag is their sole signal. Because library extensions
-  // are infrastructure, they bypass all plugin activation gates.
+  // are not user-facing plugins, they bypass all plugin activation gates.
   try {
     fs.accessSync(path.join(params.pluginDir, "openclaw.plugin.json"));
   } catch {
