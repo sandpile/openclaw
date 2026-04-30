@@ -94,6 +94,15 @@ still repair that channel's plugin dependencies.
 External plugins and custom load paths must still be installed through
 `openclaw plugins install`.
 
+**Library extensions** (bundled packages without `openclaw.plugin.json` that
+declare `openclaw.bundle.stageRuntimeDependencies: true` in `package.json`) are
+infrastructure, not user-facing plugins. They are loaded on-demand through
+`loadBundledPluginPublicArtifactModuleSync` and never go through channel/slot
+activation or the manifest registry. As infrastructure, they bypass
+`plugins.enabled`, `plugins.deny`, `plugins.allow`, and per-entry plugin gates.
+Their declared runtime dependencies are always installed by unscoped startup
+scans and `openclaw doctor --fix`.
+
 ## Plugin types
 
 OpenClaw recognizes two plugin formats:
